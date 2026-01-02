@@ -1,5 +1,4 @@
 # YTS Magnet Link Fetcher
-
 A command-line tool to search for movies on [YTS](yifystatus.com) and fetch magnet links for available torrents.
 
 ## Features
@@ -8,15 +7,22 @@ A command-line tool to search for movies on [YTS](yifystatus.com) and fetch magn
 -  Display available torrents with quality labels
 -  Generate full magnet links with tracker support
 
-
+Recommended installation using pipx:
+```
+pipx install yts-cli
+```
+Or using pip:
+```
+pip install yts-cli
+```
 ## Usage
 
 ```bash
-python yts.py --query "name of movie"
+yts.py --query "name of movie"
 ```
 ## Example
 ```
-python yts.py --query "Mad Max"
+yts.py --query "Mad Max"
 ```
 Results
 ```YAML
@@ -26,12 +32,6 @@ Results
 
   1080p:
     magnet:?xt=urn:btih:...&dn=Mad Max...&tr=...
-```
-## Requirements and Dependencies:
-Python 3.7+
-```
-pip install rich
-pip install requests rich beautifulsoup4
 ```
 ## Limitations
 - Returns a maximum of 10 results per query
