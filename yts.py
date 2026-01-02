@@ -1,18 +1,14 @@
-"""
-YTS Magnet Link Fetcher.
-
-This script allows users to search for movies on YTS and retrieve magnet links
-for available torrents.
-"""
-
 import argparse
 import requests
+import re
 import sys
+from bs4 import BeautifulSoup
 from rich.console import Console
 
 console = Console(force_terminal=True)
 
-API_URL = "https://yts.mx/api/v2/list_movies.json"
+STATUS_URL = "https://yifystatus.com/"
+API_PATH = "/api/v2/list_movies.json"
 
 # List of trackers for building the magnet link.
 TRACKERS = [
@@ -26,20 +22,54 @@ TRACKERS = [
     "udp://tracker.leechers-paradise.org:6969"
 ]
 
+
+def fetch_official_domain():
+    """Fetch the current official domain from the status page."""
+    try:
+        resp = requests.get(STATUS_URL, timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException:
+        return None
+
+    html = resp.text
+    # Look for the line that says 'Current official domain: <domain>'
+    match = re.search(r"Current official domain:\s*([A-Za-z0-9\.-]+)", html)
+    if match:
+        return match.group(1).lower()
+
+    # Fallback: try to parse list if above fails
+    soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text()
+    match = re.search(r"Current official domain:\s*([A-Za-z0-9\.-]+)", text)
+    if match:
+        return match.group(1).lower()
+
+    return None
+
+
+def get_api_url():
+    domain = fetch_official_domain()
+    if not domain:
+        console.print("[yellow]Warning:[/yellow] Could not get official domain, falling back to yts.lt")
+        domain = "yts.lt"
+    return f"https://{domain}{API_PATH}"
+
+
 def build_magnet(torrent_hash, name):
-    """Build a magnet link from a torrent hash and movie name."""
     tracker_params = "&".join(f"tr={t}" for t in TRACKERS)
     return f"magnet:?xt=urn:btih:{torrent_hash}&dn={name}&{tracker_params}"
 
+
 def search_movies(query):
-    """Search for movies on the YTS API."""
+    url = get_api_url()
     params = {"query_term": query, "limit": 10}
-    response = requests.get(API_URL, params=params, timeout=10)
+    response = requests.get(url, params=params, timeout=10)
+    response.raise_for_status()
     data = response.json()
     return data.get("data", {}).get("movies", [])
 
+
 def display_movies(movies):
-    """Display movie information and torrent links in a formatted way."""
     for movie in movies:
         movie_id = movie.get("id")
         title = movie.get("title")
@@ -62,8 +92,8 @@ def display_movies(movies):
                 console.print(f"[cyan]{magnet}[/cyan]\n")
                 printed.add(label)
 
+
 def main():
-    """Parse command-line arguments and run the search."""
     parser = argparse.ArgumentParser(
         description=None,
         add_help=False,
@@ -91,5 +121,7 @@ def main():
         console.print("  --query QUERY    Search for a movie")
         sys.stdout.flush()
 
+
 if __name__ == "__main__":
     main()
+
