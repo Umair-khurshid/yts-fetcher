@@ -1,6 +1,6 @@
 # YTS Magnet Link Fetcher
 
-A command-line tool to search for movies on [YTS](yifystatus.com and fetch magnet links for available torrents.
+A command-line tool to search for movies on [YTS](yifystatus.com) and fetch magnet links for available torrents.
 
 ## Features
 
