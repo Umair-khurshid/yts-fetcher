@@ -1,0 +1,15 @@
+[project]
+name = "yts-cli"
+version = "0.1.0"
+description = "Command line tool to fetch YTS magnet links"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+  "requests",
+  "rich",
+  "beautifulsoup4",
+]
+
+[project.scripts]
+yts = "yts.cli:main"
+
